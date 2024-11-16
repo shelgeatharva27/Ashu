@@ -8,14 +8,15 @@ const image = document.getElementById('cover'),
     prevBtn = document.getElementById('prev'),
     nextBtn = document.getElementById('next'),
     playBtn = document.getElementById('play'),
-    background = document.getElementById('bg-img');
+    background = document.getElementById('bg-img'),
+    songList = document.getElementById('song-list'); // New: For playlist
 
 const music = new Audio();
 
 const songs = [
     {
         path: 'assets/1.mp3',
-        displayName: 'The Charmer\'s Call',
+        displayName: "The Charmer's Call",
         cover: 'assets/1.jpg',
         artist: 'Hanu Dixit',
     },
@@ -36,12 +37,13 @@ const songs = [
         displayName: 'Intellect',
         cover: 'assets/3.jpg',
         artist: 'Yung Logos',
-    }
+    },
 ];
 
 let musicIndex = 0;
 let isPlaying = false;
 
+// Toggle play/pause
 function togglePlay() {
     if (isPlaying) {
         pauseMusic();
@@ -50,24 +52,23 @@ function togglePlay() {
     }
 }
 
+// Play music
 function playMusic() {
     isPlaying = true;
-    // Change play button icon
     playBtn.classList.replace('fa-play', 'fa-pause');
-    // Set button hover title
     playBtn.setAttribute('title', 'Pause');
     music.play();
 }
 
+// Pause music
 function pauseMusic() {
     isPlaying = false;
-    // Change pause button icon
     playBtn.classList.replace('fa-pause', 'fa-play');
-    // Set button hover title
     playBtn.setAttribute('title', 'Play');
     music.pause();
 }
 
+// Load selected song
 function loadMusic(song) {
     music.src = song.path;
     title.textContent = song.displayName;
@@ -76,12 +77,14 @@ function loadMusic(song) {
     background.src = song.cover;
 }
 
+// Change to next or previous song
 function changeMusic(direction) {
     musicIndex = (musicIndex + direction + songs.length) % songs.length;
     loadMusic(songs[musicIndex]);
     playMusic();
 }
 
+// Update progress bar and time
 function updateProgressBar() {
     const { duration, currentTime } = music;
     const progressPercent = (currentTime / duration) * 100;
@@ -92,12 +95,31 @@ function updateProgressBar() {
     currentTimeEl.textContent = `${formatTime(currentTime / 60)}:${formatTime(currentTime % 60)}`;
 }
 
+// Set progress bar on click
 function setProgressBar(e) {
     const width = playerProgress.clientWidth;
     const clickX = e.offsetX;
     music.currentTime = (clickX / width) * music.duration;
 }
 
+// Load and play the song from playlist
+function selectSong(index) {
+    musicIndex = index;
+    loadMusic(songs[musicIndex]);
+    playMusic();
+}
+
+// Generate playlist dynamically
+function populateSongList() {
+    songs.forEach((song, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${song.displayName} - ${song.artist}`;
+        li.addEventListener('click', () => selectSong(index));
+        songList.appendChild(li);
+    });
+}
+
+// Event listeners
 playBtn.addEventListener('click', togglePlay);
 prevBtn.addEventListener('click', () => changeMusic(-1));
 nextBtn.addEventListener('click', () => changeMusic(1));
@@ -105,4 +127,6 @@ music.addEventListener('ended', () => changeMusic(1));
 music.addEventListener('timeupdate', updateProgressBar);
 playerProgress.addEventListener('click', setProgressBar);
 
+// Initialize
 loadMusic(songs[musicIndex]);
+populateSongList();
